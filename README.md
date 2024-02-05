@@ -2,7 +2,7 @@
 
 This is the code for our arXiv preprint:
 
-[On the Universality of Coupling-based Normalizing Flows](http://arxiv.org/abs/XXX) on full-dimensional normalizing flows:
+[On the Universality of Coupling-based Normalizing Flows](http://arxiv.org/abs/XXX):
 ```bibtex
 @article{draxler2024universality,
     title = {{{On the Universality of Coupling-based Normalizing Flows}}},
