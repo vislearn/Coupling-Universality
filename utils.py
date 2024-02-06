@@ -7,12 +7,12 @@ import torch.distributions as D
 import os
 import tqdm
 
-#Train an INN
+#Training of an INN
 def train(INN,p_data:Callable,device:str,lr:float,milestones:list,gamma:float,batch_size:int,n_batches:int,experiment_name:str,save_freq:int):
     """
     parameters:
         INN:                Normalizing flow to train
-        p_data:             Function to get samples followikng the target distribution
+        p_data:             Function to get samples following the target distribution
         lr:                 Learning rate
         milestones:         Milestones for learning rate decay
         gamma:              Factor for learning rate decay
@@ -25,13 +25,14 @@ def train(INN,p_data:Callable,device:str,lr:float,milestones:list,gamma:float,ba
 
     INN.train()
     
+    #Create a folder for the training results
     folder = "./"+experiment_name
     os.mkdir(folder)
 
     #Latent distribution of the model
     p_0 = force_to(D.MultivariateNormal(torch.zeros(2),torch.eye(2)),device)
     
-    #Initialize the optimzzer and the lr scheduler
+    #Initialize the optimizer and the lr scheduler
     optimizer = torch.optim.Adam(INN.parameters(),lr = lr)
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer,milestones=milestones,gamma =gamma)
 
@@ -45,11 +46,11 @@ def train(INN,p_data:Callable,device:str,lr:float,milestones:list,gamma:float,ba
         #Get training data
         x = p_data.sample(N = batch_size).to(device)
 
-        #Compute the loss
+        #Compute the objective
         z,jac = INN(x)
         nll = - (p_0.log_prob(z) + jac).mean()
 
-        #Optimze
+        #Optimize
         optimizer.zero_grad()
         nll.backward()
         optimizer.step()
@@ -75,12 +76,12 @@ def get_grid_n_dim(res_list:list,lim_list:list):
 
     '''
     parameters:
-        res_list: List of intes containing the resolutions along the different dimensions
+        res_list: List of integers containing the number of grid points along the different dimensions
         lim_list: Lists of lists contaiing the limits of the gird along the different dimensions
 
     returns:
-        grid_points:            Tensor of shape (N,d) containing the points on the grid
-        spacings_tensor:        List containing the distance between points for each dimension
+        grid_points:            Tensor of shape (N,d) containing the grid points
+        spacings_tensor:        List containing the distance between grid points for each dimension
         coordinate_grids_list:  List containing the coordinate grids for each dimension
     '''
 
@@ -119,14 +120,14 @@ def eval_pdf_on_grid_2D(pdf:Callable,x_lims:list = [-10.0,10.0],y_lims:list = [-
         y_res:  Number of grid points in y direction
 
     returns:
-        pdf_grid:   Grid of ppdf values
+        pdf_grid:   Grid of pdf values
         x_grid:     Grid of x coordinates
         y_grid:     Grid of y coordinates
     """
 
     grid_points,spacings_tensor,coordinate_grids = get_grid_n_dim(res_list = [x_res,y_res],lim_list = [x_lims,y_lims])
 
-    #Evaluat pdf
+    #Evaluate the pdf
     pdf_grid = pdf(grid_points).reshape(y_res,x_res)
 
     x_grid = coordinate_grids[0]
@@ -134,7 +135,7 @@ def eval_pdf_on_grid_2D(pdf:Callable,x_lims:list = [-10.0,10.0],y_lims:list = [-
 
     return pdf_grid,x_grid,y_grid
 
-#visualize the pdf 
+#Visualize the pdf 
 def plot_pdf_2D(pdf_grid:torch.tensor,x_grid:torch.tensor,y_grid:torch.tensor,ax:plt.axes,fs:int = 20,title:str = ""):
     """
     parameters:
@@ -159,12 +160,12 @@ class GMM():
     def __init__(self,means:torch.tensor,covs:torch.tensor,weights:torch.tensor = None)->None:
         """
         parameters:
-            means: Tensor of shape [M,d] containing the locations of the gaussina modes
-            covs: Tensor of shape [M,d,d] containing the covariance matrices of the gaussina modes
-            weights: Tensor of shape [M] containing the weights of the gaussian modes. Use equal weights if not specified
+            means: Tensor of shape [M,d] containing the locations of the gaussian modes
+            covs: Tensor of shape [M,d,d] containing the covariance matrices of the gaussian modes
+            weights: Tensor of shape [M] containing the weights of the gaussian modes. Uniform weights are used if not specified
         """
 
-        #get diensionality of the data set
+        #get dimensionality of the data set
         self.d = len(means[0])
 
         #Get the number of modes

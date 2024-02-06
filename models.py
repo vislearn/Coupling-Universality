@@ -5,12 +5,13 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
+
 #Modified GIN coupling block to allow variable jacobian determinant
 class ModifiedGINCouplingBlock(Fm.GINCouplingBlock):
     def __init__(self, dims_in, dims_c=[], subnet_constructor: Callable[..., Any] = None, clamp: float = 2, clamp_activation: str | Callable[..., Any] = "ATAN", split_len: float | int = 0.5,normalize:bool = True):
         '''
         Additional parameters:
-            normalize:      Return constant jacobian of on if true
+            normalize:      Return constant Jacobian determinant if true
         '''
 
         super().__init__(dims_in, dims_c, subnet_constructor, clamp, clamp_activation, split_len)
@@ -31,12 +32,12 @@ class ModifiedGINCouplingBlock(Fm.GINCouplingBlock):
         s2, t2 = a2[:, :self.split_len1], a2[:, self.split_len1:]
         s2 = self.clamp * self.f_clamp(s2)
 
-        #Constant jacobian
+        #Constant Jacobian determinant of one
         if self.normalize: 
             s2 = s2 - s2.mean(1, keepdim=True)
             jac = 0.0
 
-        #Variable Jacobian
+        #Variable Jacobian determinant
         else:
             jac = s2.sum(-1)
 
@@ -52,12 +53,12 @@ class ModifiedGINCouplingBlock(Fm.GINCouplingBlock):
         s1, t1 = a1[:, :self.split_len2], a1[:, self.split_len2:]
         s1 = self.clamp * self.f_clamp(s1)
 
-        #Constant jacobian
+        #Constant Jacobian determinant of one
         if self.normalize: 
             s1 = s1- s1.mean(1, keepdim=True)
             jac = 0.0
 
-        #Variable Jacobian
+        #Variable Jacobian determinant
         else:
             jac = s1.sum(-1)
 
@@ -74,7 +75,7 @@ class ScalingBlock(Fm.InvertibleModule):
     def __init__(self, dims_in: ShapeList, dims_c: ShapeList = None):
         super().__init__(dims_in, dims_c)
 
-        #Learnable parameter
+        #Learnable scaling parameter
         self.a = nn.Parameter(torch.ones([1]))
 
     def output_dims(self, input_dims: ShapeList) -> ShapeList:
@@ -82,7 +83,6 @@ class ScalingBlock(Fm.InvertibleModule):
     
     def forward(self, x_or_z: Iterable[Tensor], c: Iterable[Tensor] = None, rev: bool = False, jac: bool = True) -> Tuple[Tuple[Tensor], Tensor]:
         
-
         x = x_or_z[0]
         N= x.shape[0]
         d = x.shape[1]
@@ -97,7 +97,7 @@ class ScalingBlock(Fm.InvertibleModule):
 
         return ((x,),jac)     
 
-#Construct the subnetworks for the normalizing flow
+#Construct the subnetworks for the normalizing flows
 def get_subnet(c_in,c_out):
 
     d_hidden = 128
@@ -116,7 +116,7 @@ def get_subnet(c_in,c_out):
         if isinstance(layer,nn.Linear):
             nn.init.xavier_normal_(layer.weight)
 
-    #Set the weights and the bias of the layer to zero
+    #Set the weights and the bias of the final layer to zero
     layers[-1].weight.data.fill_(0.0)
     layers[-1].bias.data.fill_(0.0)
 
