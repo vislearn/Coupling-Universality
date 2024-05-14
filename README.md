@@ -1,6 +1,6 @@
 # On the Universality of Coupling-based Normalizing Flows
 
-This is the code for our arXiv preprint:
+This is the code for our ICML 2024 paper:
 
 [On the Universality of Coupling-based Normalizing Flows](https://arxiv.org/abs/2402.06578):
 ```bibtex
