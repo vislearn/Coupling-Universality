@@ -107,7 +107,7 @@ terminado @ file:///croot/terminado_1671751832461/work
 tinycss2 @ file:///croot/tinycss2_1668168815555/work
 toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
 tomli @ file:///home/conda/feedstock_root/build_artifacts/tomli_1644342247877/work
-torch==2.2.0
+torch==2.7.0
 torchaudio==2.2.0
 torchvision==0.17.0
 tornado @ file:///home/conda/feedstock_root/build_artifacts/tornado_1695373560918/work
